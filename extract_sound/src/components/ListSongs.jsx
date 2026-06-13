@@ -1,30 +1,35 @@
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
+import { useEffect, useContext } from "react";
 import SongsExibition from "./SongsExibition";
+import { SongContext } from "../store/SongsContext";
 
-export default function ListSongs({loading}) {
-    const [songs, setSongs] = useState([]);
+export default function ListSongs({ loading, onSelect }) {
+    const { allSongs, setSongs, setIndex } = useContext(SongContext);
 
     useEffect(() => {
         async function getSongs() {
             try {
-                const response = await invoke("get_songs");
-                console.log(response);
-                setSongs(response);
+                if (allSongs.length === 0) {
+                    const response = await invoke("get_songs");
+                    setSongs(response);
+                }
             } catch (error) {
                 console.error("Erro ao carregar músicas:", error);
-                setSongs([]);
-            }
-            finally{
+            } finally {
                 loading(false);
             }
         }
         getSongs();
-    }, []);
+    }, [allSongs.length, setSongs, loading]);
+
+    function handleSelectSong(index) {
+        setIndex(index);
+        onSelect();
+    }
 
     return (
         <div className="w-full h-full flex flex-col gap-5 p-4 pt-24 overflow-y-auto">
-            {!songs || songs.length === 0 ? (
+            {!allSongs || allSongs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center mt-20 gap-4 opacity-60">
                     <svg 
                         className="animate-fly w-16 h-16 fill-current text-white" 
@@ -35,8 +40,12 @@ export default function ListSongs({loading}) {
                     <p className="text-white font-medium text-lg tracking-wider">Silêncio... Nenhuma música encontrada</p>
                 </div>
             ) : (
-                songs.map((song, index) => (
-                    <SongsExibition key={index} song={song} />
+                allSongs.map((song, index) => (
+                    <SongsExibition 
+                        key={index} 
+                        song={song} 
+                        onClick={() => handleSelectSong(index)} 
+                    />
                 ))
             )}
         </div>

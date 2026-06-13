@@ -32,7 +32,7 @@ export default function Menu() {
                     </button>
 
                     <button
-                        onClick={() => handleActualScreen("SportiMy")}
+                        onClick={() => handleActualScreen("ListSongs")}
                         className="group relative w-64 h-64 bg-[#1e1e1e] border border-white/5 rounded-3xl flex flex-col items-center justify-center gap-4 transition-all duration-500 hover:scale-110 hover:border-blue-500/50 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)]"
                     >
                         <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center group-hover:bg-blue-500 transition-colors duration-500">
@@ -55,7 +55,9 @@ export default function Menu() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </button>
-                    {actualScreen === "SportiMy" ? <ListSongs loading={setIsLoading}/> : <DownloadMusic loading={setIsLoading}/>}
+                    {actualScreen === "ListSongs" && <ListSongs loading={setIsLoading} onSelect={() => setActualScreen("SpotiMy")} />}
+                    {actualScreen === "DownloadMusic" && <DownloadMusic loading={setIsLoading} />}
+                    {actualScreen === "SpotiMy" && <SpotiMy loading={setIsLoading} />}
                 </div>
             )}
         </div>

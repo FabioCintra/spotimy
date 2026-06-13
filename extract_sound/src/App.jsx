@@ -3,6 +3,7 @@ import "./index.css";
 import DownloadMusic from "./components/DownloadMusic.jsx";
 import ScreenLoading from "./components/ScreenLoading.jsx";
 import Menu from "./components/Menu.jsx";
+import SongsProvider from "./store/SongsContext.jsx";
 
 function App() {
 
@@ -22,13 +23,12 @@ function App() {
   },[]);
 
   return (
-    <>
+    <SongsProvider>
       {isLoading 
         ? <ScreenLoading />
         : <Menu />
       }
-      
-    </>
+    </SongsProvider>
   );
 }
 

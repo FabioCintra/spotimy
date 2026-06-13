@@ -1,57 +1,90 @@
-import React, { useState,useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { SongContext } from '../store/SongsContext';
 
+export default function SpotiMy({ loading }) {
+    const { 
+        allSongs, 
+        currentIndex, 
+        isPlaying, 
+        currentTime, 
+        togglePlay, 
+        nextSong, 
+        prevSong, 
+        seek,
+        stop
+    } = useContext(SongContext);
 
+    const currentSong = allSongs[currentIndex];
 
-export default function SpotiMy({loading}) {
-    const [isPause, setIsPause] = useState(false);
+    useEffect(() => {
+        if (loading) loading(false);
 
-     useEffect(() => {
-        loading(false);
-    },[])
+        // Cleanup function: para a música quando sai da tela
+        return () => {
+            stop();
+        };
+    }, [loading, stop]);
 
-    function handlePause() {
-        setIsPause(pause => !pause);
-    }
+    const formatTime = (seconds) => {
+        if (!seconds) return "0:00";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleProgressChange = (e) => {
+        const newTime = (e.target.value / 100) * currentSong.duration;
+        seek(newTime);
+    };
+
+    if (!currentSong) return <div className="h-screen bg-black text-white flex items-center justify-center">Nenhuma música selecionada</div>;
+
+    const progress = (currentTime / currentSong.duration) * 100 || 0;
 
     return (
-        <div className="h-screen bg-black text-white flex flex-col justify-end">
-            <header className="flex-1 flex items-center justify-center p-10">
-                <div className="w-80 h-80 bg-[#282828] shadow-2xl rounded-lg flex items-center justify-center overflow-hidden group relative">
-                    <span className="text-gray-500 font-bold text-lg group-hover:hidden transition-all">Sua Música</span>
-                    <div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center transition-all">
-                         <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                            <PlayIcon size={32} />
-                         </div>
-                    </div>
+        <div className="h-screen bg-black text-white flex flex-col justify-end animate-in fade-in duration-500">
+            <header className="flex-1 flex flex-col items-center justify-center p-10 gap-6">
+                <div className="w-72 h-72 bg-gradient-to-br from-gray-700 to-black shadow-2xl rounded-lg flex items-center justify-center overflow-hidden relative group">
+                    <svg className="w-32 h-32 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                </div>
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold truncate max-w-xs">{currentSong.name.replace(".webm", "").replace(".mp3", "")}</h1>
+                    <p className="text-gray-400">Tocando agora</p>
                 </div>
             </header>
 
-            <footer className="bg-[#121212] border-t border-white/5 p-4 flex flex-col items-center">
-                {/* Progress Bar Container */}
-                <div className="w-full max-w-4xl flex items-center space-x-3 mb-2">
-                    <span className="text-[10px] text-gray-400">0:00</span>
-                    <div className="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer relative group">
-                        <div className="absolute left-0 top-0 h-full bg-white group-hover:bg-green-500 rounded-full w-[30%] transition-colors"></div>
-                        <div className="absolute left-[30%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full hidden group-hover:block shadow-md"></div>
-                    </div>
-                    <span className="text-[10px] text-gray-400">3:45</span>
+            <footer className="bg-[#121212] border-t border-white/5 p-6 flex flex-col items-center gap-4">
+                {/* Progress Bar */}
+                <div className="w-full max-w-2xl flex items-center space-x-4">
+                    <span className="text-xs text-gray-400 w-10 text-right">{formatTime(currentTime)}</span>
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        value={progress}
+                        onChange={handleProgressChange}
+                        className="flex-1 h-1 bg-gray-600 rounded-full appearance-none cursor-pointer accent-green-500 hover:accent-green-400"
+                    />
+                    <span className="text-xs text-gray-400 w-10">{formatTime(currentSong.duration)}</span>
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center space-x-6">
-                    <button className="text-gray-400 hover:text-white transition-colors duration-200">
-                        <SkipBackIcon />
+                <div className="flex items-center space-x-8 mb-4">
+                    <button onClick={prevSong} className="text-gray-400 hover:text-white transition-all transform hover:scale-110 active:scale-95">
+                        <SkipBackIcon size={32} />
                     </button>
                     
                     <button 
-                        onClick={handlePause}
-                        className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-transform duration-200 active:scale-95 shadow-lg"
+                        onClick={togglePlay}
+                        className="w-14 h-14 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-all active:scale-95 shadow-lg"
                     >
-                        {isPause ? <PlayIcon fill="black" /> : <PauseIcon fill="black" />}
+                        {!isPlaying ? <PlayIcon fill="black" size={28} /> : <PauseIcon fill="black" size={28} />}
                     </button>
 
-                    <button className="text-gray-400 hover:text-white transition-colors duration-200">
-                        <SkipForwardIcon />
+                    <button onClick={nextSong} className="text-gray-400 hover:text-white transition-all transform hover:scale-110 active:scale-95">
+                        <SkipForwardIcon size={32} />
                     </button>
                 </div>
             </footer>
@@ -59,27 +92,26 @@ export default function SpotiMy({loading}) {
     );
 }
 
-// Simple Icon Components to keep the code clean
 const PlayIcon = ({ size = 24, fill = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill}>
         <path d="M7 6V18L17 12L7 6Z" />
     </svg>
 );
 
 const PauseIcon = ({ size = 24, fill = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill}>
         <path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" />
     </svg>
 );
 
 const SkipBackIcon = ({ size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
         <path d="M6 6H8V18H6V6ZM9.5 12L18 18V6L9.5 12Z" />
     </svg>
 );
 
 const SkipForwardIcon = ({ size = 24 }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
         <path d="M6 18L14.5 12L6 6V18ZM16 6V18H18V6H16Z" />
     </svg>
 );

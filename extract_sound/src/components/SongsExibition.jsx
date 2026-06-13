@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function SongsExibition({ song }) {
+export default function SongsExibition({ song, onClick }) {
     const textRef = useRef(null);
     const containerRef = useRef(null);
     const [scrollAmount, setScrollAmount] = useState(0);
@@ -26,6 +26,7 @@ export default function SongsExibition({ song }) {
 
     return (
         <button 
+            onClick={onClick}
             className="w-full bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-md p-3 flex flex-col items-start group"
             style={{ "--scroll-amount": `${scrollAmount}px` }}
         >

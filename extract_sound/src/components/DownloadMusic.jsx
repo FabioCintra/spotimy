@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { invoke } from "@tauri-apps/api/core";
+import { SongContext } from '../store/SongsContext';
 
 export default function DownloadMusic({loading}) {
     const [status, setStatus] = useState("Cole o link para começar");
     const textInput = useRef();
     const [isLoading, setIsLoading] = useState(false);
+    const ctxSong = useContext(SongContext);
 
     useEffect(() => {
         loading(false);
@@ -23,6 +25,7 @@ export default function DownloadMusic({loading}) {
         try {
             const value = await invoke("extract_sound", { url });
             setStatus(value);
+            ctxSong.setSongs([]);
         } catch (error) {
             setStatus("Erro: " + error);
         } finally {

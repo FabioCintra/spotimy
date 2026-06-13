@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 
-export default function SpotiMy() {
+export default function SpotiMy({loading}) {
     const [isPause, setIsPause] = useState(false);
+
+     useEffect(() => {
+        loading(false);
+    },[])
 
     function handlePause() {
         setIsPause(pause => !pause);

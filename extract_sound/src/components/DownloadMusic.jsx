@@ -1,10 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 
-export default function DownloadMusic() {
+export default function DownloadMusic({loading}) {
     const [status, setStatus] = useState("Cole o link para começar");
     const textInput = useRef();
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        loading(false);
+    },[])
 
     async function sendVideoLink(url) {
         setIsLoading(true);

@@ -1,0 +1,1 @@
+Estou fazendo um aplicativo descktop/android onde nele sera possivel extrair o audio de videos do youtube atraves do link e ouvi-las atraves de um seccao do menu a qual se assemelha ao spotify!

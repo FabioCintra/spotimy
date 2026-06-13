@@ -26,4 +26,6 @@ rusty_ytdl = "0.7.4"
 tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", features = ["json"] }
 percent-encoding = "2.3"
+lofty = "0.21.1"
+matroska = "0.30.1"
 

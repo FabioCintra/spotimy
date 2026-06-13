@@ -3,6 +3,15 @@ use reqwest::Client;
 use tokio::io::AsyncWriteExt;
 use percent_encoding::percent_decode_str;
 use std::fs;
+use lofty::file::AudioFile;
+use lofty::read_from_path;
+
+#[derive(serde::Serialize)]
+struct SongsInfo {
+    name: String,
+    duration: f64,
+    path: String,
+}
 
 #[tauri::command]
 async fn extract_sound(app: tauri::AppHandle, url: String) -> Result<String, String> {
@@ -77,7 +86,7 @@ async fn extract_sound(app: tauri::AppHandle, url: String) -> Result<String, Str
 }
 
 #[tauri::command]
-async fn get_musics(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+async fn get_songs(app: tauri::AppHandle) -> Result<Vec<SongsInfo>, String> {
     let download_dir = app.path().download_dir().map_err(|e| e.to_string())?;
     let folder_path = download_dir.join("spotimy");
 
@@ -89,10 +98,37 @@ async fn get_musics(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     for entry in entries {
         if let Ok(entry) = entry {
             let path = entry.path();
-            if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("mp3") {
-                if let Some(file_name) = path.file_name().and_then(|s| s.to_str()) {
-                    songs.push(file_name.to_string());
+            let extension = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+            
+            if path.is_file() && (extension == "webm" || extension == "mp3") {
+                let file_name = path.file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("Desconhecido")
+                    .to_string();
+
+                let mut duration = 0.0;
+
+                if extension == "webm" {
+                    // Tenta usar a crate matroska para WebM
+                    if let Ok(file) = std::fs::File::open(&path) {
+                        if let Ok(mkv) = matroska::Matroska::open(file) {
+                            duration = mkv.info.duration.map(|d| d.as_secs_f64()).unwrap_or(0.0);
+                        }
+                    }
+                } else if extension == "mp3" {
+                    // Tenta usar lofty para MP3
+                    if let Ok(probe) = lofty::read_from_path(&path) {
+                        duration = probe.properties().duration().as_secs_f64();
+                    }
                 }
+
+                songs.push(
+                    SongsInfo {
+                        name: file_name,
+                        duration,
+                        path: path.to_string_lossy().to_string(),
+                    }
+                );
             }
         }
     }
@@ -104,7 +140,7 @@ async fn get_musics(app: tauri::AppHandle) -> Result<Vec<String>, String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![extract_sound, get_musics])
+        .invoke_handler(tauri::generate_handler![extract_sound, get_songs])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import SpotiMy from "./SpotiMy";
 import DownloadMusic from "./DownloadMusic";
 import LoadingCircle from "./LoadingCircle";
+import ListSongs from "./ListSongs";
 
 export default function Menu() {
     const [actualScreen, setActualScreen] = useState(null);
@@ -54,7 +55,7 @@ export default function Menu() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </button>
-                    {actualScreen === "SportiMy" ? <SpotiMy loading={setIsLoading}/> : <DownloadMusic loading={setIsLoading}/>}
+                    {actualScreen === "SportiMy" ? <ListSongs loading={setIsLoading}/> : <DownloadMusic loading={setIsLoading}/>}
                 </div>
             )}
         </div>
